@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 MODE=${1:-"strict"}
-RESULTS_DIR="results/${MODE}_dma_trace"
+RESULTS_DIR="traces/${MODE}_dma_trace"
 mkdir -p "$RESULTS_DIR"
 
 echo "================================================="
@@ -25,16 +25,16 @@ BPF_FILE=$(mktemp /tmp/nvme_trace.XXXXXX.bt)
 cat << 'EOF' > "$BPF_FILE"
 tracepoint:iommu:map {
     @iommu_map_count = count();
-    @iommu_map_bytes = sum(args.size);
+    @iommu_map_bytes = sum(args->size);
 }
 tracepoint:iommu:unmap {
     @iommu_unmap_count = count();
-    @iommu_unmap_bytes = sum(args.size);
+    @iommu_unmap_bytes = sum(args->size);
 }
-tracepoint:dma:dma_map_sg {
+kprobe:dma_map_sg_attrs {
     @dma_map_sg_count = count();
 }
-tracepoint:dma:dma_unmap_sg {
+kprobe:dma_unmap_sg_attrs {
     @dma_unmap_sg_count = count();
 }
 kprobe:dma_map_page_attrs {
