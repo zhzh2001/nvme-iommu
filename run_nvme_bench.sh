@@ -5,9 +5,15 @@ set -euo pipefail
 # Ensure we are in the script's directory
 cd "$(dirname "$0")"
 
-MODE=${1:-}
-RUNS=${2:-10}  # Number of FIO runs per workload, defaults to 10
-RUNTIME=${3:-30} # Runtime per FIO run in seconds, defaults to 30
+NODE_TYPE=${1:-}
+MODE=${2:-}
+RUNS=${3:-10}  # Number of FIO runs per workload, defaults to 10
+RUNTIME=${4:-30} # Runtime per FIO run in seconds, defaults to 30
+
+if [ -z "$NODE_TYPE" ]; then
+    echo "Usage: $0 <node_type> [mode] [runs] [runtime]"
+    exit 1
+fi
 
 if [ -z "$MODE" ]; then
     # Try to auto-detect mode from /sys/class/iommu and /proc/cmdline
@@ -33,7 +39,7 @@ if [ "$MODE" = "pt" ] || [ "$MODE" = "pass" ]; then
     MODE="passthrough"
 fi
 
-RESULTS_DIR="results/${MODE}_$(date +%Y%m%d_%H%M%S)"
+RESULTS_DIR="results/${NODE_TYPE}/${MODE}_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$RESULTS_DIR"
 
 echo "================================================="
@@ -113,7 +119,7 @@ echo "================================================="
 
 # Call the standalone python script to parse results
 if [ -f "./parse_results.py" ]; then
-    python3 ./parse_results.py "$RESULTS_DIR"
+    python3 ./parse_results.py "$NODE_TYPE" "$RESULTS_DIR"
 else
     echo "[!] parse_results.py not found in current directory."
 fi

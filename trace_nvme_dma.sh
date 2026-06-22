@@ -5,8 +5,15 @@ set -euo pipefail
 # Ensure we are in the script's directory
 cd "$(dirname "$0")"
 
-MODE=${1:-"strict"}
-RESULTS_DIR="traces/${MODE}_dma_trace"
+NODE_TYPE=${1:-}
+MODE=${2:-"strict"}
+
+if [ -z "$NODE_TYPE" ]; then
+    echo "Usage: $0 <node_type> [mode]"
+    exit 1
+fi
+
+RESULTS_DIR="traces/${NODE_TYPE}/${MODE}_dma_trace"
 mkdir -p "$RESULTS_DIR"
 
 echo "================================================="

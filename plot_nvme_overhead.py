@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
+import sys
 import glob
 import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_latest_dir(mode_name):
-    dirs = glob.glob(f"results/{mode_name}_*")
+def get_latest_dir(node_type, mode_name):
+    dirs = glob.glob(f"results/{node_type}/{mode_name}_*")
     # Filter to actual directories
     dirs = [d for d in dirs if os.path.isdir(d)]
     if not dirs:
@@ -24,16 +25,21 @@ def load_summary(results_dir):
         return json.load(f)
 
 def main():
+    if len(sys.argv) < 2:
+        print("Usage: plot_nvme_overhead.py <node_type>")
+        sys.exit(1)
+    node_type = sys.argv[1]
+
     # Find latest results directories for the four modes
     modes = ['no_iommu', 'passthrough', 'deferred', 'strict']
-    dirs = {m: get_latest_dir(m) for m in modes}
+    dirs = {m: get_latest_dir(node_type, m) for m in modes}
     summaries = {m: load_summary(dirs[m]) for m in modes}
     
     # Check if we have at least one summary to plot
     active_modes = [m for m in modes if summaries[m] is not None]
     if not active_modes:
         print("Error: No summary.json files found to plot.")
-        print("Please run benchmarks first (e.g. ./run_nvme_bench.sh deferred)")
+        print(f"Please run benchmarks first (e.g. ./run_nvme_bench.sh {node_type} deferred)")
         return
         
     print("Plotting data from:")
@@ -182,7 +188,7 @@ def main():
                              color='green' if diff >= 0 else 'red')
 
     plt.tight_layout()
-    output_path = "results/nvme_overhead_comparison.png"
+    output_path = f"results/{node_type}/nvme_overhead_comparison.png"
     plt.savefig(output_path, dpi=300)
     print(f"Comparison plot saved to {output_path}")
 

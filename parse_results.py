@@ -52,11 +52,12 @@ def get_stats(vals):
     return mean, std
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: parse_results.py <results_dir>")
+    if len(sys.argv) < 3:
+        print("Usage: parse_results.py <node_type> <results_dir>")
         sys.exit(1)
         
-    results_dir = sys.argv[1]
+    node_type = sys.argv[1]
+    results_dir = sys.argv[2]
     if not os.path.isdir(results_dir):
         print(f"Error: {results_dir} is not a directory.")
         sys.exit(1)
@@ -71,6 +72,7 @@ def main():
     
     summary_lines = []
     summary_lines.append("# NVMe FIO Benchmark Summary")
+    summary_lines.append(f"Node Type: `{node_type}`")
     summary_lines.append(f"Directory: `{results_dir}`\n")
     summary_lines.append("| Workload | Metric | Run Count | Average | StdDev |")
     summary_lines.append("| :--- | :--- | :---: | :---: | :---: |")
